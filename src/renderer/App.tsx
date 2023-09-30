@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 
 import { ConfigProvider, Tabs, TabsProps } from 'antd';
@@ -6,16 +7,34 @@ import FaceRec from './FaceRec';
 import './App.css';
 
 function Dashboard() {
+
+  const [fileList, setFileList] = useState<string[]>([]);
+
+  const getLocalFiles = async () => {
+    const files = await window.electron.getFiles();
+    setFileList(files);
+  };
+
+  useEffect(() => {
+    // console.log(window.electron);
+    getLocalFiles();
+
+    window.electron.ipcRenderer.on('upload-img-end', (arg) => {
+      // eslint-disable-next-line no-console
+      getLocalFiles();
+    });
+  }, []);
+
   const items: TabsProps['items'] = [
     {
       key: '1',
       label: '人脸库',
-      children: <FaceList />,
+      children: <FaceList data={fileList} />,
     },
     {
       key: '2',
       label: '人脸识别',
-      children: <FaceRec />,
+      children: <FaceRec data={fileList} />,
     },
   ];
   return (
@@ -28,7 +47,7 @@ function Dashboard() {
       }}
     >
       <div className="h-screen w-screen bg-blue-100 flex flex-col justify-center items-center text-2xl overflow-hidden">
-        <div className="py-8 bg-white w-[1280px] h-4/5">
+        <div className="container py-8 bg-white h-4/5">
           <div className="text-3xl text-center">人脸识别应用</div>
           <div className="mt-8">
             <Tabs
@@ -37,6 +56,7 @@ function Dashboard() {
               items={items}
               style={{ height: 'calc(80vh - 100px)' }}
               className="overflow-auto"
+              // destroyInactiveTabPane
             />
           </div>
         </div>

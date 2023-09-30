@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example';
+export type Channels = string;
 
 const electronHandler = {
   ipcRenderer: {
@@ -22,6 +22,7 @@ const electronHandler = {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },
+  getFiles: () => ipcRenderer.invoke('getFiles'),
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

@@ -9,11 +9,26 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  protocol,
+  net,
+  dialog,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
+import {
+  getAssetPath,
+  isDebug,
+  loadImgs,
+  resolveHtmlPath,
+  saveImgFromPath,
+} from './util';
 
 class AppUpdater {
   constructor() {
@@ -25,19 +40,10 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
-
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
 }
-
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
   require('electron-debug')();
@@ -61,13 +67,35 @@ const createWindow = async () => {
     await installExtensions();
   }
 
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
+  ipcMain.handle('getFiles', loadImgs);
 
-  const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
-  };
+  ipcMain.on('upload-img', (event, options) => {
+    dialog
+      .showOpenDialog({
+        filters: [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }],
+        properties: ['openFile'],
+      })
+      .then((result) => {
+        // console.log('options', options);
+        // console.log(result);
+        if (!result.canceled && result.filePaths.length > 0) {
+          const filepath = result.filePaths[0];
+          // console.log(filepath);
+          // save to app
+          if (options?.save) {
+            saveImgFromPath(filepath);
+          }
+          event.sender.send('upload-img-end', {
+            name: path.basename(filepath),
+            path: filepath,
+          });
+          // event.sender.send('upload-img-end', path.basename(filepath));
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -75,6 +103,8 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
+      webSecurity: false,
+      sandbox: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -127,6 +157,12 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
+    protocol.handle('atom', (request) => {
+      console.log(request.url);
+      const fileName = request.url.slice('atom://'.length);
+      console.log(fileName);
+      return net.fetch(`file://${fileName}`);
+    });
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the

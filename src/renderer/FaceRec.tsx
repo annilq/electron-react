@@ -1,10 +1,62 @@
-import { Button } from 'antd';
+/* eslint-disable react/jsx-props-no-spreading */
+import { Alert, Button } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 
-export default function FaceRec() {
+export interface facefile {
+  name: string;
+  path: string;
+}
+export default function FaceRec({ data = [] }: { data: facefile[] }) {
+  const [facefile, setFile] = useState<facefile>();
+
+  const handleUpload = () => {
+    window.electron.ipcRenderer.sendMessage('upload-img');
+  };
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('upload-img-end', (file: facefile) => {
+      setFile(file);
+    });
+  }, []);
+
+  const isFindFace = useMemo(() => {
+    return data.find((fileitem) => fileitem.name === facefile?.name);
+  }, [facefile, data]);
+  let tip = '上传照片后显示检测结果';
+  let type = 'info';
+  if (facefile) {
+    if (isFindFace) {
+      tip = '识别成功';
+      type = 'success';
+    } else {
+      tip = '该照片未注册到人脸库';
+      type = 'error';
+    }
+  }
+
   return (
-    <div className="bg-blue-200 text-blue-900 ">
-      <h1>electron-react-boilerplate</h1>
-      <Button>上传照片</Button>
+    <div>
+      <div className="mt-4 grid grid-cols-2 ">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex justify-center items-center w-64 h-64 border border-gray-200 border-solid">
+            {facefile && (
+              <img
+                src={`atom://${facefile.path}`}
+                className="w-64 h-64 object-cover"
+              />
+            )}
+          </div>
+
+          <Button type="primary" onClick={handleUpload}>
+            上传照片
+          </Button>
+        </div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex justify-center items-center w-64 h-64 border border-gray-200 border-solid">
+            <Alert type={type} message={tip} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
