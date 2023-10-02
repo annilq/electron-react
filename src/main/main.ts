@@ -90,13 +90,12 @@ const createWindow = async () => {
               name: path.basename(filepath),
               path: filepath,
             });
-          }else{
+          } else {
             event.sender.send('upload-img-for-rec', {
               name: path.basename(filepath),
               path: filepath,
             });
           }
-
         }
       })
       .catch((err) => {
