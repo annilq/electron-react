@@ -3,12 +3,11 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 
 import { ConfigProvider, Tabs, TabsProps } from 'antd';
 import FaceList from './FaceList';
-import FaceRec from './FaceRec';
+import FaceRec, { facefile } from './FaceRec';
 import './App.css';
 
 function Dashboard() {
-
-  const [fileList, setFileList] = useState<string[]>([]);
+  const [fileList, setFileList] = useState<facefile[]>([]);
 
   const getLocalFiles = async () => {
     const files = await window.electron.getFiles();
@@ -19,17 +18,29 @@ function Dashboard() {
     // console.log(window.electron);
     getLocalFiles();
 
-    window.electron.ipcRenderer.on('upload-img-end', (arg) => {
+    const uns = window.electron.ipcRenderer.on('upload-img-end', (arg) => {
       // eslint-disable-next-line no-console
       getLocalFiles();
     });
+    const uns2 = window.electron.ipcRenderer.on('delete-img-end', (arg) => {
+      // eslint-disable-next-line no-console
+      getLocalFiles();
+    });
+    return () => {
+      uns();
+      uns2();
+    };
   }, []);
+
+  const remove = (fileName: string) => {
+    window.electron.ipcRenderer.sendMessage('delete-img', fileName);
+  };
 
   const items: TabsProps['items'] = [
     {
       key: '1',
       label: '人脸库',
-      children: <FaceList data={fileList} />,
+      children: <FaceList data={fileList} onDelete={remove} />,
     },
     {
       key: '2',

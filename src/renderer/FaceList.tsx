@@ -2,7 +2,13 @@
 import { Button } from 'antd';
 import { facefile } from './FaceRec';
 
-export default function FaceList({ data = [] }: { data: facefile[] }) {
+export default function FaceList({
+  data = [],
+  onDelete,
+}: {
+  data: facefile[];
+  onDelete: (fileName: string) => void;
+}) {
   const handleUpload = () => {
     window.electron.ipcRenderer.sendMessage('upload-img', { save: true });
   };
@@ -14,12 +20,19 @@ export default function FaceList({ data = [] }: { data: facefile[] }) {
       </Button>
       <div className="mt-4 grid grid-cols-3 overflow-y-auto items-center justify-center ">
         {data.map((item, i) => (
-          <img
-            // src={`atom://${item.path}`}
-            src={`file://${item.path}`}
-            className="w-64 h-64 object-cover"
-            key={item.path}
-          />
+          <div key={item.path} className="relative">
+            <div
+              onClick={() => onDelete(item.name)}
+              className="absolute right-1 top-1 bg-orange-500 text-white rounded-lg px-4 text-sm cursor-pointer"
+            >
+              删除
+            </div>
+            <img
+              // src={`atom://${item.path}`}
+              src={`file://${item.path}`}
+              className="w-full aspect-square"
+            />
+          </div>
         ))}
       </div>
     </>

@@ -14,9 +14,13 @@ export default function FaceRec({ data = [] }: { data: facefile[] }) {
   };
 
   useEffect(() => {
-    window.electron.ipcRenderer.on('upload-img-end', (file: facefile) => {
-      setFile(file);
-    });
+    const unsubscribe = window.electron.ipcRenderer.on(
+      'upload-img-end',
+      (file: facefile) => {
+        setFile(file);
+      },
+    );
+    return unsubscribe;
   }, []);
 
   const isFindFace = useMemo(() => {

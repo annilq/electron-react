@@ -30,6 +30,17 @@ export const loadImgs = async () => {
     }));
   return imageFiles;
 };
+export const deleteImg = async (event, fileName: string) => {
+  console.log(fileName);
+
+  try {
+    fs.unlinkSync(path.resolve(facedir, fileName));
+    console.log('Delete File successfully.');
+    event.sender.send('delete-img-end');
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const saveImgFromPath = async (filepath: string) => {
   const fileName = path.join(facedir, path.basename(filepath));

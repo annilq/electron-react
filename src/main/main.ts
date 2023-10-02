@@ -23,6 +23,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import {
+  deleteImg,
   getAssetPath,
   isDebug,
   loadImgs,
@@ -68,6 +69,7 @@ const createWindow = async () => {
   }
 
   ipcMain.handle('getFiles', loadImgs);
+  ipcMain.on('delete-img', deleteImg);
 
   ipcMain.on('upload-img', (event, options) => {
     dialog
@@ -89,7 +91,6 @@ const createWindow = async () => {
             name: path.basename(filepath),
             path: filepath,
           });
-          // event.sender.send('upload-img-end', path.basename(filepath));
         }
       })
       .catch((err) => {
