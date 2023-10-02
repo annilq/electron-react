@@ -86,11 +86,17 @@ const createWindow = async () => {
           // save to app
           if (options?.save) {
             saveImgFromPath(filepath);
+            event.sender.send('upload-img-end', {
+              name: path.basename(filepath),
+              path: filepath,
+            });
+          }else{
+            event.sender.send('upload-img-for-rec', {
+              name: path.basename(filepath),
+              path: filepath,
+            });
           }
-          event.sender.send('upload-img-end', {
-            name: path.basename(filepath),
-            path: filepath,
-          });
+
         }
       })
       .catch((err) => {

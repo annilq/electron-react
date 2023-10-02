@@ -15,7 +15,7 @@ export default function FaceRec({ data = [] }: { data: facefile[] }) {
 
   useEffect(() => {
     const unsubscribe = window.electron.ipcRenderer.on(
-      'upload-img-end',
+      'upload-img-for-rec',
       (file: facefile) => {
         setFile(file);
       },
