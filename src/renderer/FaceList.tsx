@@ -15,7 +15,8 @@ export default function FaceList({ data = [] }: { data: facefile[] }) {
       <div className="mt-4 grid grid-cols-3 overflow-y-auto items-center justify-center ">
         {data.map((item, i) => (
           <img
-            src={`atom://${item.path}`}
+            // src={`atom://${item.path}`}
+            src={`file://${item.path}`}
             className="w-64 h-64 object-cover"
             key={item.path}
           />

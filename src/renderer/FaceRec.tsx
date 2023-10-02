@@ -41,7 +41,8 @@ export default function FaceRec({ data = [] }: { data: facefile[] }) {
           <div className="flex justify-center items-center w-64 h-64 border border-gray-200 border-solid">
             {facefile && (
               <img
-                src={`atom://${facefile.path}`}
+                // src={`atom://${facefile.path}`}
+                src={`file://${facefile.path}`}
                 className="w-64 h-64 object-cover"
               />
             )}
