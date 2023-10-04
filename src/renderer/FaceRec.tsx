@@ -33,7 +33,7 @@ export default function FaceRec({ data = [] }: { data: facefile[] }) {
       tip = '识别成功';
       type = 'success';
     } else {
-      tip = '该照片未注册到人脸库';
+      tip = <div>识别失败<div>该照片未注册到人脸库</div></div>;
       type = 'error';
     }
   }
