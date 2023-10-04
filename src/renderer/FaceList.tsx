@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { Button } from 'antd';
 import { facefile } from './FaceRec';
+import Empty from './noface';
 
 export default function FaceList({
   data = [],
@@ -18,6 +19,7 @@ export default function FaceList({
       <Button type="primary" onClick={handleUpload}>
         新增人脸
       </Button>
+      {data.length === 0 ? <Empty /> : false}
       <div className="mt-4 grid grid-cols-3 overflow-y-auto items-center justify-center ">
         {data.map((item, i) => (
           <div key={item.path} className="relative">
