@@ -11,7 +11,7 @@ export default function FaceList({
   onDelete: (fileName: string) => void;
 }) {
   const handleUpload = () => {
-    window.electron.ipcRenderer.sendMessage('upload-img', { save: true });
+    window.electron.ipcRenderer.sendMessage('upload-img');
   };
 
   return (

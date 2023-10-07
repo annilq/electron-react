@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { Alert, Button } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Empty from './noface';
 
 export interface facefile {
@@ -11,7 +11,7 @@ export default function FaceRec({ data = [] }: { data: facefile[] }) {
   const [facefile, setFile] = useState<facefile>();
 
   const handleUpload = () => {
-    window.electron.ipcRenderer.sendMessage('upload-img');
+    window.electron.ipcRenderer.sendMessage('rec-img');
   };
 
   useEffect(() => {
@@ -24,13 +24,10 @@ export default function FaceRec({ data = [] }: { data: facefile[] }) {
     return unsubscribe;
   }, []);
 
-  const isFindFace = useMemo(() => {
-    return data.find((fileitem) => fileitem.name === facefile?.name);
-  }, [facefile, data]);
   let tip = '上传照片后显示检测结果';
   let type = 'info';
   if (facefile) {
-    if (isFindFace) {
+    if (facefile.result) {
       tip = '识别成功';
       type = 'success';
     } else {
