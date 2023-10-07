@@ -83,7 +83,6 @@ const createWindow = async () => {
           const filepath = result.filePaths[0];
           // 调用人脸检测
           const faceResult = await detectFace(filepath);
-          console.log('faceResult', JSON.stringify(faceResult));
 
           if (faceResult?.result?.face_num > 0) {
             const face_token = faceResult?.result?.face_list[0]?.face_token;
@@ -130,7 +129,10 @@ const createWindow = async () => {
 
           if (faceResult?.result?.face_num > 0) {
             const searchResult = await searchFace(filepath);
-            if (searchResult?.result.face_token) {
+            if (
+              searchResult?.result?.user_list?.length > 0 &&
+              searchResult?.result?.user_list[0].score > 80
+            ) {
               event.sender.send('upload-img-for-rec', {
                 name: path.basename(filepath),
                 path: filepath,
