@@ -82,11 +82,16 @@ const createWindow = async () => {
         if (!result.canceled && result.filePaths.length > 0) {
           const filepath = result.filePaths[0];
           // 调用人脸检测
-          const faceResult = await detectFace(filepath);
-
+          const faceResult = await detectFace(event, filepath);
+          if (faceResult?.error_code !== 0) {
+            return;
+          }
           if (faceResult?.result?.face_num > 0) {
             const face_token = faceResult?.result?.face_list[0]?.face_token;
-            const searchResult = await searchFace(filepath);
+            const searchResult = await searchFace(event, filepath);
+            if (searchResult?.error_code !== 0) {
+              return;
+            }
             if (
               searchResult?.result?.user_list?.length > 0 &&
               searchResult?.result?.user_list[0].score > 80
@@ -95,10 +100,7 @@ const createWindow = async () => {
               event.sender.send('message', '人脸已注册，请勿重复注册');
               return;
             }
-            const addresult = await addFace(filepath);
-            if (addresult?.error_code == '223105') {
-              event.sender.send('message', '人脸已注册，请勿重复注册');
-            }
+            const addresult = await addFace(event, filepath);
             if (addresult?.error_code === 0) {
               saveImgFromPath(filepath, face_token);
               event.sender.send('upload-img-end', {
@@ -106,8 +108,6 @@ const createWindow = async () => {
                 path: filepath,
               });
             }
-          } else {
-            event.sender.send('message', '未检测到人脸信息');
           }
         }
       })
@@ -125,10 +125,12 @@ const createWindow = async () => {
         if (!result.canceled && result.filePaths.length > 0) {
           const filepath = result.filePaths[0];
           // 调用人脸检测
-          const faceResult = await detectFace(filepath);
-
+          const faceResult = await detectFace(event, filepath);
+          if (faceResult?.error_code !== 0) {
+            return;
+          }
           if (faceResult?.result?.face_num > 0) {
-            const searchResult = await searchFace(filepath);
+            const searchResult = await searchFace(event, filepath);
             if (
               searchResult?.result?.user_list?.length > 0 &&
               searchResult?.result?.user_list[0].score > 80
@@ -146,8 +148,6 @@ const createWindow = async () => {
               });
               event.sender.send('message', '人脸未注册');
             }
-          } else {
-            event.sender.send('message', '未检测到人脸信息');
           }
         }
       })
