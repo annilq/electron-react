@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 
-import { ConfigProvider, Tabs, TabsProps } from 'antd';
+import { ConfigProvider, Tabs, TabsProps, message } from 'antd';
 import FaceList from './FaceList';
 import FaceRec, { facefile } from './FaceRec';
 import './App.css';
 
 function Dashboard() {
   const [fileList, setFileList] = useState<facefile[]>([]);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const getLocalFiles = async () => {
     const files = await window.electron.getFiles();
@@ -21,15 +22,32 @@ function Dashboard() {
     const uns = window.electron.ipcRenderer.on('upload-img-end', (arg) => {
       // eslint-disable-next-line no-console
       getLocalFiles();
+      messageApi.open({
+        type: 'success',
+        content: '添加人脸成功',
+      });
     });
     const uns2 = window.electron.ipcRenderer.on('delete-img-end', (arg) => {
       // eslint-disable-next-line no-console
       getLocalFiles();
+      messageApi.open({
+        type: 'success',
+        content: '删除人脸成功',
+      });
     });
     return () => {
       uns();
       uns2();
     };
+  }, []);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('message', (message: string) => {
+      messageApi.open({
+        type: 'warning',
+        content: message,
+      });
+    });
   }, []);
 
   const remove = (fileName: string) => {
@@ -57,6 +75,7 @@ function Dashboard() {
         },
       }}
     >
+      {contextHolder}
       <div className="h-screen w-screen bg-blue-100 flex flex-col justify-center items-center text-2xl overflow-hidden">
         <div className="container py-8 bg-white h-4/5">
           <div className="text-3xl text-center">人脸识别应用</div>

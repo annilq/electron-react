@@ -4,6 +4,8 @@ import path from 'path';
 import fs from 'fs';
 import { app } from 'electron';
 
+export const appId = 'org.erb.ElectronReact';
+
 export const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
@@ -30,9 +32,8 @@ export const loadImgs = async () => {
     }));
   return imageFiles;
 };
-export const deleteImg = async (event, fileName: string) => {
-  console.log(fileName);
 
+export const deleteImg = async (event, fileName: string) => {
   try {
     fs.unlinkSync(path.resolve(facedir, fileName));
     console.log('Delete File successfully.');
@@ -42,9 +43,12 @@ export const deleteImg = async (event, fileName: string) => {
   }
 };
 
-export const saveImgFromPath = async (filepath: string) => {
+export const saveImgFromPath = async (filepath: string, face_token: string) => {
   const fileName = path.join(facedir, path.basename(filepath));
+  const newfileName = path.join(facedir, face_token + path.extname(filepath));
+
   fs.copyFileSync(filepath, fileName);
+  fs.renameSync(fileName, newfileName);
 };
 
 export function resolveHtmlPath(htmlFileName: string) {

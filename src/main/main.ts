@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
 /**
@@ -15,21 +16,21 @@ import {
   BrowserWindow,
   shell,
   ipcMain,
-  protocol,
-  net,
+  // protocol,
+  // net,
   dialog,
 } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import {
-  deleteImg,
   getAssetPath,
   isDebug,
   loadImgs,
   resolveHtmlPath,
   saveImgFromPath,
 } from './util';
+import { addFace, deleteFace, detectFace, searchFace } from './FaceApi';
 
 class AppUpdater {
   constructor() {
@@ -69,7 +70,7 @@ const createWindow = async () => {
   }
 
   ipcMain.handle('getFiles', loadImgs);
-  ipcMain.on('delete-img', deleteImg);
+  ipcMain.on('delete-img', deleteFace);
 
   ipcMain.on('upload-img', (event, options) => {
     dialog
@@ -77,24 +78,76 @@ const createWindow = async () => {
         filters: [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }],
         properties: ['openFile'],
       })
-      .then((result) => {
-        // console.log('options', options);
-        // console.log(result);
+      .then(async (result) => {
         if (!result.canceled && result.filePaths.length > 0) {
           const filepath = result.filePaths[0];
-          // console.log(filepath);
-          // save to app
-          if (options?.save) {
-            saveImgFromPath(filepath);
-            event.sender.send('upload-img-end', {
-              name: path.basename(filepath),
-              path: filepath,
-            });
-          } else {
-            event.sender.send('upload-img-for-rec', {
-              name: path.basename(filepath),
-              path: filepath,
-            });
+          // 调用人脸检测
+          const faceResult = await detectFace(event, filepath);
+          if (faceResult?.error_code !== 0) {
+            return;
+          }
+          if (faceResult?.result?.face_num > 0) {
+            const face_token = faceResult?.result?.face_list[0]?.face_token;
+            const searchResult = await searchFace(event, filepath);
+            if (searchResult?.error_code !== 0) {
+              return;
+            }
+            if (
+              searchResult?.result?.user_list?.length > 0 &&
+              searchResult?.result?.user_list[0].score > 80
+            ) {
+              console.log('find search');
+              event.sender.send('message', '人脸已注册，请勿重复注册');
+              return;
+            }
+            const addresult = await addFace(event, filepath);
+            if (addresult?.error_code === 0) {
+              saveImgFromPath(filepath, face_token);
+              event.sender.send('upload-img-end', {
+                name: face_token + path.extname(filepath),
+                path: filepath,
+              });
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+  ipcMain.on('rec-img', (event) => {
+    dialog
+      .showOpenDialog({
+        filters: [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }],
+        properties: ['openFile'],
+      })
+      .then(async (result) => {
+        if (!result.canceled && result.filePaths.length > 0) {
+          const filepath = result.filePaths[0];
+          // 调用人脸检测
+          const faceResult = await detectFace(event, filepath);
+          if (faceResult?.error_code !== 0) {
+            return;
+          }
+          if (faceResult?.result?.face_num > 0) {
+            const searchResult = await searchFace(event, filepath);
+            if (
+              searchResult?.result?.user_list?.length > 0 &&
+              searchResult?.result?.user_list[0].score > 80
+            ) {
+              event.sender.send('upload-img-for-rec', {
+                name: path.basename(filepath),
+                path: filepath,
+                result: true,
+              });
+            } else {
+              event.sender.send('upload-img-for-rec', {
+                name: path.basename(filepath),
+                path: filepath,
+                result: false,
+              });
+              event.sender.send('message', '人脸未注册');
+            }
           }
         }
       })
@@ -163,12 +216,12 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
-    protocol.handle('atom', (request) => {
-      console.log(request.url);
-      const fileName = request.url.slice('atom://'.length);
-      console.log(fileName);
-      return net.fetch(`file://${fileName}`);
-    });
+    // protocol.handle('atom', (request) => {
+    //   console.log(request.url);
+    //   const fileName = request.url.slice('atom://'.length);
+    //   console.log(fileName);
+    //   return net.fetch(`file://${fileName}`);
+    // });
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
