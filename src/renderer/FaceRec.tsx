@@ -7,6 +7,7 @@ export interface facefile {
   name: string;
   path: string;
 }
+
 export default function FaceRec({ data = [] }: { data: facefile[] }) {
   const [facefile, setFile] = useState<facefile>();
 

@@ -89,25 +89,20 @@ const createWindow = async () => {
           if (faceResult?.result?.face_num > 0) {
             const face_token = faceResult?.result?.face_list[0]?.face_token;
             const searchResult = await searchFace(event, filepath);
-            if (searchResult?.error_code !== 0) {
-              return;
-            }
-            if (
-              searchResult?.result?.user_list?.length > 0 &&
-              searchResult?.result?.user_list[0].score > 80
-            ) {
-              console.log('find search');
-              event.sender.send('message', '人脸已注册，请勿重复注册');
-              return;
-            }
-            const addresult = await addFace(event, filepath);
-            if (addresult?.error_code === 0) {
-              saveImgFromPath(filepath, face_token);
-              event.sender.send('upload-img-end', {
-                name: face_token + path.extname(filepath),
-                path: filepath,
-              });
-            }
+            // 如果人脸库没有则保存
+              if(searchResult?.result?.user_list?.[0].score > 80){
+                  console.log('find search');
+                  event.sender.send('message', '人脸已注册，请勿重复注册');
+                  return
+                }            
+              const addresult = await addFace(event, filepath);
+              if (addresult?.error_code === 0) {
+                saveImgFromPath(filepath, face_token);
+                event.sender.send('upload-img-end', {
+                  name: face_token + path.extname(filepath),
+                  path: filepath,
+                });
+              }            
           }
         }
       })
@@ -130,7 +125,7 @@ const createWindow = async () => {
             return;
           }
           if (faceResult?.result?.face_num > 0) {
-            const searchResult = await searchFace(event, filepath);
+            const searchResult = await searchFace(event, filepath)
             if (
               searchResult?.result?.user_list?.length > 0 &&
               searchResult?.result?.user_list[0].score > 80

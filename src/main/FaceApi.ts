@@ -80,10 +80,7 @@ export async function searchFace(event, filepath: string) {
       }
       return result;
     })
-    .catch(function (err) {
-      // 如果发生网络错误
-      event.sender.send('message', err.message);
-    });
+    
 }
 
 export async function deleteFace(event, faceName: string) {
