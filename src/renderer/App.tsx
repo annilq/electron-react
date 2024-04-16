@@ -67,7 +67,7 @@ function Dashboard() {
               items={items}
               style={{ height: 'calc(80vh - 100px)' }}
               className="overflow-auto"
-              // destroyInactiveTabPane
+              destroyInactiveTabPane
             />
           </div>
         </div>

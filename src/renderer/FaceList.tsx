@@ -20,7 +20,7 @@ export default function FaceList({
         新增人脸
       </Button>
       {data.length === 0 ? <Empty /> : false}
-      <div className="mt-4 grid grid-cols-3 overflow-y-auto items-center justify-center ">
+      <div className="mt-4 grid grid-cols-3 overflow-y-auto items-center justify-center gap-2">
         {data.map((item, i) => (
           <div key={item.path} className="relative">
             <div

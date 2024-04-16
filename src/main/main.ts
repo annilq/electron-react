@@ -15,8 +15,8 @@ import {
   BrowserWindow,
   shell,
   ipcMain,
-  protocol,
-  net,
+  // protocol,
+  // net,
   dialog,
 } from 'electron';
 import { autoUpdater } from 'electron-updater';
@@ -163,12 +163,12 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
-    protocol.handle('atom', (request) => {
-      console.log(request.url);
-      const fileName = request.url.slice('atom://'.length);
-      console.log(fileName);
-      return net.fetch(`file://${fileName}`);
-    });
+    // protocol.handle('atom', (request) => {
+    //   console.log(request.url);
+    //   const fileName = request.url.slice('atom://'.length);
+    //   console.log(fileName);
+    //   return net.fetch(`file://${fileName}`);
+    // });
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
